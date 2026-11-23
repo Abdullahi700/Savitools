@@ -22,29 +22,14 @@ import {
   type AbiCatalogEntry,
   type DeployedContract,
 } from '@/lib/api';
+import {
+  loadContractHistory,
+  saveContractHistory,
+} from '@/lib/contract-history';
 
 const STELLAR_EXPERT_URL = 'https://stellar.expert/explorer/testnet/contract';
 
-function loadHistory(): DeployedContract[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = window.localStorage.getItem('savitools:contracts:history');
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveHistory(contracts: DeployedContract[]) {
-  if (typeof window === 'undefined') return;
-  try {
-    // Keep most recent 50 contracts to preserve browser storage quota
-    const bounded = contracts.slice(0, 50);
-    window.localStorage.setItem('savitools:contracts:history', JSON.stringify(bounded));
-  } catch {
-    // Gracefully ignore storage quota or restriction errors
-  }
-}
+export { loadContractHistory as loadHistory, saveContractHistory as saveHistory };
 
 function AbiCatalogPanel({ contractId }: { contractId: string }) {
   const [abiJson, setAbiJson] = useState('');
@@ -338,7 +323,7 @@ function AbiDiffPanel() {
 }
 
 export function ContractsTool() {
-  const [contracts, setContracts] = useState<DeployedContract[]>(loadHistory);
+  const [contracts, setContracts] = useState<DeployedContract[]>(loadContractHistory);
   const [wasmFile, setWasmFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [constructorArgs, setConstructorArgs] = useState('');
@@ -427,7 +412,7 @@ export function ContractsTool() {
 
       const updated = [newContract, ...contracts];
       setContracts(updated);
-      saveHistory(updated);
+      saveContractHistory(updated);
       setSelectedContract(result.contractId);
       setDeployProgress('');
     } catch (err) {
@@ -475,7 +460,7 @@ export function ContractsTool() {
   const removeContract = (contractId: string) => {
     const updated = contracts.filter((c) => c.contractId !== contractId);
     setContracts(updated);
-    saveHistory(updated);
+    saveContractHistory(updated);
     if (selectedContract === contractId) {
       setSelectedContract(null);
     }
