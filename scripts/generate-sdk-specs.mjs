@@ -61,7 +61,9 @@ function parseYamlContent(content) {
       // try next python command
     }
   }
-  throw new Error('Failed to parse YAML content: no working python command with yaml package found');
+  throw new Error(
+    'Failed to parse YAML content: no working python command with yaml package found',
+  );
 }
 
 function parseArgs(argv) {
