@@ -53,6 +53,7 @@ import {
   serializeWorkspaceFile,
   WorkspaceFormatError,
 } from '@/lib/workspace-format';
+import { BROWSER_STORAGE_KEYS, safeGetItem, safeSetItem } from '@/lib/browser-storage';
 import { apiErrorMessage } from '@/lib/api';
 import {
   Code2,
@@ -104,7 +105,7 @@ export function ComposerTool() {
   const prefilled = useRef(false);
 
   // Workspace state
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>(loadSavedWorkspaces);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
   const [workspaceName, setWorkspaceName] = useState('');
@@ -310,6 +311,7 @@ export function ComposerTool() {
 
   useEffect(() => {
     saveComposerWorkspaces(workspaces);
+    safeSetItem(BROWSER_STORAGE_KEYS.LEGACY_COMPOSER_WORKSPACES, workspaces);
   }, [workspaces]);
 
   const getCurrentComposerState = () => ({
